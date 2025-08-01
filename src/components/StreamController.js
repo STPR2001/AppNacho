@@ -34,7 +34,7 @@ const StreamController = () => {
         setQuestions(parsedQuestions);
       }
     }
-  }, []);
+  }, [close]);
 
   // Función para abrir el overlay en una nueva pestaña
   const openOverlay = () => {
