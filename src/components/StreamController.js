@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useSocket } from '../hooks/useSocket';
-import { questions as defaultQuestions } from '../data/questions';
-import './StreamController.css';
+import React, { useState, useEffect } from "react";
+import { useSocket } from "../hooks/useSocket";
+import { questions as defaultQuestions } from "../data/questions";
+import "./StreamController.css";
 
 const StreamController = () => {
   const [questions, setQuestions] = useState(defaultQuestions);
   const [gameStarted, setGameStarted] = useState(false);
   const [overlayWindow, setOverlayWindow] = useState(null);
   const [showQuestionManager, setShowQuestionManager] = useState(false);
-  
+
   const {
     isConnected,
     gameState,
@@ -22,30 +22,36 @@ const StreamController = () => {
     hideAnswer,
     resetQuestion,
     showOverlay,
-    hideOverlay
+    hideOverlay,
   } = useSocket();
 
   useEffect(() => {
     // Cargar preguntas personalizadas si existen
-    const savedQuestions = localStorage.getItem('customQuestions');
+    const savedQuestions = localStorage.getItem("customQuestions");
     if (savedQuestions) {
       const parsedQuestions = JSON.parse(savedQuestions);
       if (parsedQuestions.length > 0) {
         setQuestions(parsedQuestions);
       }
     }
-  }, [close]);
+  }, []);
 
   // Función para abrir el overlay en una nueva pestaña
   const openOverlay = () => {
-    const overlay = window.open('/overlay', 'overlay', 'width=1920,height=1080,scrollbars=no,resizable=yes');
+    const overlay = window.open(
+      "/overlay",
+      "overlay",
+      "width=1920,height=1080,scrollbars=no,resizable=yes"
+    );
     setOverlayWindow(overlay);
-    
+
     // Verificar si la ventana se abrió correctamente
     if (overlay) {
-      console.log('Overlay abierto en nueva pestaña');
+      console.log("Overlay abierto en nueva pestaña");
     } else {
-      window.alert('Por favor, permite las ventanas emergentes para esta página');
+      window.alert(
+        "Por favor, permite las ventanas emergentes para esta página"
+      );
     }
   };
 
@@ -64,7 +70,9 @@ const StreamController = () => {
       setGameStarted(true);
       openOverlay();
     } else {
-      window.alert('No hay preguntas disponibles. Agrega algunas preguntas primero.');
+      window.alert(
+        "No hay preguntas disponibles. Agrega algunas preguntas primero."
+      );
     }
   };
 
@@ -79,10 +87,10 @@ const StreamController = () => {
   const handleQuestionsUpdate = (newQuestions) => {
     if (newQuestions.length > 0) {
       setQuestions(newQuestions);
-      localStorage.setItem('customQuestions', JSON.stringify(newQuestions));
+      localStorage.setItem("customQuestions", JSON.stringify(newQuestions));
     } else {
       setQuestions(defaultQuestions);
-      localStorage.removeItem('customQuestions');
+      localStorage.removeItem("customQuestions");
     }
   };
 
@@ -102,10 +110,11 @@ const StreamController = () => {
       hideOverlay,
       openOverlay,
       closeOverlay,
-      getCurrentQuestion: () => gameState.questions[gameState.currentQuestionIndex] || null,
+      getCurrentQuestion: () =>
+        gameState.questions[gameState.currentQuestionIndex] || null,
       getQuestionCount: () => gameState.questions.length,
       getGameState: () => gameState,
-      toggleQuestionManager: () => setShowQuestionManager(prev => !prev)
+      toggleQuestionManager: () => setShowQuestionManager((prev) => !prev),
     };
 
     console.log(`
@@ -129,69 +138,83 @@ Comandos disponibles:
 • streamController.getGameState() - Obtener estado completo del juego
 • streamController.toggleQuestionManager() - Abrir/cerrar gestor de preguntas
 
-Estado de conexión: ${isConnected ? '✅ Conectado' : '❌ Desconectado'}
-Partida activa: ${gameState.isActive ? '✅ Sí' : '❌ No'}
-Pregunta actual: ${gameState.currentQuestionIndex + 1} de ${gameState.questions.length}
+Estado de conexión: ${isConnected ? "✅ Conectado" : "❌ Desconectado"}
+Partida activa: ${gameState.isActive ? "✅ Sí" : "❌ No"}
+Pregunta actual: ${gameState.currentQuestionIndex + 1} de ${
+      gameState.questions.length
+    }
     `);
 
     return () => {
       delete window.streamController;
     };
-  }, [isConnected, gameState, nextQuestion, previousQuestion, setQuestion, selectAnswer, showAnswer, hideAnswer, resetQuestion, showOverlay, hideOverlay]);
+  }, [
+    isConnected,
+    gameState,
+    nextQuestion,
+    previousQuestion,
+    setQuestion,
+    selectAnswer,
+    showAnswer,
+    hideAnswer,
+    resetQuestion,
+    showOverlay,
+    hideOverlay,
+  ]);
 
   return (
     <div className="stream-controller">
       <div className="controller-panel">
-        <h2>🎮 Controlador de Stream - WebSocket</h2>
+        <h2>🎮 Juego de preguntas y respuestas - TekkoGT</h2>
         <p>Controla el juego en tiempo real desde aquí</p>
-        
+
         {/* Estado de conexión */}
         <div className="connection-status">
-          <p>Estado: {isConnected ? '✅ Conectado' : '❌ Desconectado'}</p>
-          <p>Partida: {gameState.isActive ? '✅ Activa' : '❌ Inactiva'}</p>
+          <p>Estado: {isConnected ? "✅ Conectado" : "❌ Desconectado"}</p>
+          <p>Partida: {gameState.isActive ? "✅ Activa" : "❌ Inactiva"}</p>
           {gameState.isActive && (
-            <p>Pregunta: {gameState.currentQuestionIndex + 1} de {gameState.questions.length}</p>
+            <p>
+              Pregunta: {gameState.currentQuestionIndex + 1} de{" "}
+              {gameState.questions.length}
+            </p>
           )}
         </div>
 
         {/* Botones principales */}
         <div className="controller-buttons">
           {!gameStarted ? (
-            <button 
-              onClick={handleStartGame} 
+            <button
+              onClick={handleStartGame}
               disabled={!isConnected || questions.length === 0}
               className="start-button"
             >
               🚀 Iniciar Partida
             </button>
           ) : (
-            <button 
-              onClick={handleEndGame} 
-              className="end-button"
-            >
+            <button onClick={handleEndGame} className="end-button">
               🛑 Finalizar Partida
             </button>
           )}
-          
+
           <button onClick={openOverlay} disabled={!isConnected}>
             📺 Abrir Overlay
           </button>
-          
+
           <button onClick={closeOverlay} disabled={!overlayWindow}>
             ❌ Cerrar Overlay
           </button>
 
-          <button 
-            onClick={() => setShowQuestionManager(prev => !prev)}
+          <button
+            onClick={() => setShowQuestionManager((prev) => !prev)}
             className="question-manager-button"
           >
-            ⚙️ {showQuestionManager ? 'Ocultar' : 'Gestionar'} Preguntas
+            ⚙️ {showQuestionManager ? "Ocultar" : "Gestionar"} Preguntas
           </button>
         </div>
 
         {/* Gestor de Preguntas */}
         {showQuestionManager && (
-          <QuestionManager 
+          <QuestionManager
             questions={questions}
             onQuestionsUpdate={handleQuestionsUpdate}
             defaultQuestions={defaultQuestions}
@@ -200,24 +223,26 @@ Pregunta actual: ${gameState.currentQuestionIndex + 1} de ${gameState.questions.
 
         {/* Control de preguntas */}
         <div className="controller-buttons">
-          <button 
-            onClick={nextQuestion} 
-            disabled={!gameState.isActive || gameState.currentQuestionIndex >= gameState.questions.length - 1}
+          <button
+            onClick={nextQuestion}
+            disabled={
+              !gameState.isActive ||
+              gameState.currentQuestionIndex >= gameState.questions.length - 1
+            }
           >
             ⏭️ Siguiente
           </button>
-          
-          <button 
-            onClick={previousQuestion} 
-            disabled={!gameState.isActive || gameState.currentQuestionIndex <= 0}
+
+          <button
+            onClick={previousQuestion}
+            disabled={
+              !gameState.isActive || gameState.currentQuestionIndex <= 0
+            }
           >
             ⏮️ Anterior
           </button>
-          
-          <button 
-            onClick={() => setQuestion(0)} 
-            disabled={!gameState.isActive}
-          >
+
+          <button onClick={() => setQuestion(0)} disabled={!gameState.isActive}>
             🔄 Primera
           </button>
         </div>
@@ -227,11 +252,11 @@ Pregunta actual: ${gameState.currentQuestionIndex + 1} de ${gameState.questions.
           <button onClick={showAnswer} disabled={!gameState.isActive}>
             ✅ Mostrar Respuesta
           </button>
-          
+
           <button onClick={hideAnswer} disabled={!gameState.isActive}>
             ❌ Ocultar Respuesta
           </button>
-          
+
           <button onClick={resetQuestion} disabled={!gameState.isActive}>
             🔄 Reiniciar Pregunta
           </button>
@@ -239,32 +264,32 @@ Pregunta actual: ${gameState.currentQuestionIndex + 1} de ${gameState.questions.
 
         {/* Selección rápida de respuestas */}
         <div className="controller-buttons">
-          <button 
-            onClick={() => selectAnswer(0)} 
+          <button
+            onClick={() => selectAnswer(0)}
             disabled={!gameState.isActive}
             className="answer-button"
           >
             A
           </button>
-          
-          <button 
-            onClick={() => selectAnswer(1)} 
+
+          <button
+            onClick={() => selectAnswer(1)}
             disabled={!gameState.isActive}
             className="answer-button"
           >
             B
           </button>
-          
-          <button 
-            onClick={() => selectAnswer(2)} 
+
+          <button
+            onClick={() => selectAnswer(2)}
             disabled={!gameState.isActive}
             className="answer-button"
           >
             C
           </button>
-          
-          <button 
-            onClick={() => selectAnswer(3)} 
+
+          <button
+            onClick={() => selectAnswer(3)}
             disabled={!gameState.isActive}
             className="answer-button"
           >
@@ -275,18 +300,27 @@ Pregunta actual: ${gameState.currentQuestionIndex + 1} de ${gameState.questions.
         {/* Información del juego */}
         <div className="game-info">
           <p>Preguntas disponibles: {questions.length}</p>
-          {gameState.isActive && gameState.questions[gameState.currentQuestionIndex] && (
-            <div className="current-question">
-              <p><strong>Pregunta actual:</strong></p>
-              <p>{gameState.questions[gameState.currentQuestionIndex].question}</p>
-            </div>
-          )}
+          {gameState.isActive &&
+            gameState.questions[gameState.currentQuestionIndex] && (
+              <div className="current-question">
+                <p>
+                  <strong>Pregunta actual:</strong>
+                </p>
+                <p>
+                  {gameState.questions[gameState.currentQuestionIndex].question}
+                </p>
+              </div>
+            )}
         </div>
 
         {/* Instrucciones */}
         <div className="instructions">
-          <p><strong>Instrucciones:</strong></p>
-          <p>1. Haz clic en "Gestionar Preguntas" para agregar/editar preguntas</p>
+          <p>
+            <strong>Instrucciones:</strong>
+          </p>
+          <p>
+            1. Haz clic en "Gestionar Preguntas" para agregar/editar preguntas
+          </p>
           <p>2. Haz clic en "Iniciar Partida" para comenzar</p>
           <p>3. El overlay se abrirá automáticamente en una nueva pestaña</p>
           <p>4. Usa los botones para controlar el juego en tiempo real</p>
@@ -298,34 +332,41 @@ Pregunta actual: ${gameState.currentQuestionIndex + 1} de ${gameState.questions.
 };
 
 // Componente interno para gestionar preguntas
-const QuestionManager = ({ questions, onQuestionsUpdate, defaultQuestions }) => {
+const QuestionManager = ({
+  questions,
+  onQuestionsUpdate,
+  defaultQuestions,
+}) => {
   const [newQuestion, setNewQuestion] = useState({
-    question: '',
-    options: ['', '', '', ''],
+    question: "",
+    options: ["", "", "", ""],
     correctAnswer: 0,
-    explanation: ''
+    explanation: "",
   });
   const [editingIndex, setEditingIndex] = useState(null);
 
   const handleAddQuestion = () => {
-    if (newQuestion.question.trim() && newQuestion.options.every(opt => opt.trim())) {
+    if (
+      newQuestion.question.trim() &&
+      newQuestion.options.every((opt) => opt.trim())
+    ) {
       const questionToAdd = {
         id: Date.now(),
-        ...newQuestion
+        ...newQuestion,
       };
-      
+
       const updatedQuestions = [...questions, questionToAdd];
       onQuestionsUpdate(updatedQuestions);
-      
+
       // Reset form
       setNewQuestion({
-        question: '',
-        options: ['', '', '', ''],
+        question: "",
+        options: ["", "", "", ""],
         correctAnswer: 0,
-        explanation: ''
+        explanation: "",
       });
     } else {
-      window.alert('Por favor, completa todos los campos');
+      window.alert("Por favor, completa todos los campos");
     }
   };
 
@@ -335,7 +376,7 @@ const QuestionManager = ({ questions, onQuestionsUpdate, defaultQuestions }) => 
       question: question.question,
       options: [...question.options],
       correctAnswer: question.correctAnswer,
-      explanation: question.explanation || ''
+      explanation: question.explanation || "",
     });
     setEditingIndex(index);
   };
@@ -345,59 +386,69 @@ const QuestionManager = ({ questions, onQuestionsUpdate, defaultQuestions }) => 
       const updatedQuestions = [...questions];
       updatedQuestions[editingIndex] = {
         ...updatedQuestions[editingIndex],
-        ...newQuestion
+        ...newQuestion,
       };
       onQuestionsUpdate(updatedQuestions);
-      
+
       // Reset form
       setNewQuestion({
-        question: '',
-        options: ['', '', '', ''],
+        question: "",
+        options: ["", "", "", ""],
         correctAnswer: 0,
-        explanation: ''
+        explanation: "",
       });
       setEditingIndex(null);
     }
   };
 
   const handleDeleteQuestion = (index) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta pregunta?')) {
+    if (
+      window.confirm("¿Estás seguro de que quieres eliminar esta pregunta?")
+    ) {
       const updatedQuestions = questions.filter((_, i) => i !== index);
       onQuestionsUpdate(updatedQuestions);
     }
   };
 
   const handleRestoreDefaults = () => {
-    if (window.confirm('¿Estás seguro de que quieres restaurar las preguntas por defecto?')) {
+    if (
+      window.confirm(
+        "¿Estás seguro de que quieres restaurar las preguntas por defecto?"
+      )
+    ) {
       onQuestionsUpdate(defaultQuestions);
     }
   };
 
   return (
     <div className="question-manager">
-      <h3>📝 Gestor de Preguntas</h3>
-      
+      <h3 style={{ color: "white" }}>📝 Gestor de Preguntas</h3>
+
       {/* Formulario para agregar/editar pregunta */}
       <div className="question-form">
         <div className="form-group">
-          <label>Pregunta:</label>
+          <label style={{ color: "white" }}>Pregunta:</label>
           <textarea
             value={newQuestion.question}
-            onChange={(e) => setNewQuestion({...newQuestion, question: e.target.value})}
+            onChange={(e) =>
+              setNewQuestion({ ...newQuestion, question: e.target.value })
+            }
             placeholder="Escribe tu pregunta aquí..."
             rows="3"
           />
         </div>
 
         <div className="form-group">
-          <label>Opciones:</label>
+          <label style={{ color: "white" }}>Opciones:</label>
           {newQuestion.options.map((option, index) => (
             <div key={index} className="option-input">
               <input
                 type="radio"
                 name="correctAnswer"
                 checked={newQuestion.correctAnswer === index}
-                onChange={() => setNewQuestion({...newQuestion, correctAnswer: index})}
+                onChange={() =>
+                  setNewQuestion({ ...newQuestion, correctAnswer: index })
+                }
               />
               <input
                 type="text"
@@ -405,7 +456,7 @@ const QuestionManager = ({ questions, onQuestionsUpdate, defaultQuestions }) => 
                 onChange={(e) => {
                   const newOptions = [...newQuestion.options];
                   newOptions[index] = e.target.value;
-                  setNewQuestion({...newQuestion, options: newOptions});
+                  setNewQuestion({ ...newQuestion, options: newOptions });
                 }}
                 placeholder={`Opción ${String.fromCharCode(65 + index)}`}
               />
@@ -414,10 +465,12 @@ const QuestionManager = ({ questions, onQuestionsUpdate, defaultQuestions }) => 
         </div>
 
         <div className="form-group">
-          <label>Explicación (opcional):</label>
+          <label style={{ color: "white" }}>Explicación (opcional):</label>
           <textarea
             value={newQuestion.explanation}
-            onChange={(e) => setNewQuestion({...newQuestion, explanation: e.target.value})}
+            onChange={(e) =>
+              setNewQuestion({ ...newQuestion, explanation: e.target.value })
+            }
             placeholder="Explicación de la respuesta correcta..."
             rows="2"
           />
@@ -429,15 +482,18 @@ const QuestionManager = ({ questions, onQuestionsUpdate, defaultQuestions }) => 
               <button onClick={handleUpdateQuestion} className="update-button">
                 ✏️ Actualizar Pregunta
               </button>
-              <button onClick={() => {
-                setNewQuestion({
-                  question: '',
-                  options: ['', '', '', ''],
-                  correctAnswer: 0,
-                  explanation: ''
-                });
-                setEditingIndex(null);
-              }} className="cancel-button">
+              <button
+                onClick={() => {
+                  setNewQuestion({
+                    question: "",
+                    options: ["", "", "", ""],
+                    correctAnswer: 0,
+                    explanation: "",
+                  });
+                  setEditingIndex(null);
+                }}
+                className="cancel-button"
+              >
                 ❌ Cancelar
               </button>
             </>
@@ -451,30 +507,51 @@ const QuestionManager = ({ questions, onQuestionsUpdate, defaultQuestions }) => 
 
       {/* Lista de preguntas existentes */}
       <div className="questions-list">
-        <h4>Preguntas Actuales ({questions.length})</h4>
+        <h4 style={{ color: "white" }}>
+          Preguntas Actuales ({questions.length})
+        </h4>
         {questions.map((question, index) => (
           <div key={question.id || index} className="question-item">
             <div className="question-content">
-              <p><strong>{index + 1}. {question.question}</strong></p>
+              <p>
+                <strong>
+                  {index + 1}. {question.question}
+                </strong>
+              </p>
               <div className="question-options">
                 {question.options.map((option, optIndex) => (
-                  <span 
-                    key={optIndex} 
-                    className={`option ${optIndex === question.correctAnswer ? 'correct' : ''}`}
+                  <span
+                    key={optIndex}
+                    className={`option ${
+                      optIndex === question.correctAnswer ? "correct" : ""
+                    }`}
+                    style={
+                      optIndex === question.correctAnswer
+                        ? { color: "white" }
+                        : {}
+                    }
                   >
                     {String.fromCharCode(65 + optIndex)}) {option}
                   </span>
                 ))}
               </div>
               {question.explanation && (
-                <p className="explanation"><em>Explicación: {question.explanation}</em></p>
+                <p className="explanation">
+                  <em>Explicación: {question.explanation}</em>
+                </p>
               )}
             </div>
             <div className="question-actions">
-              <button onClick={() => handleEditQuestion(index)} className="edit-button">
+              <button
+                onClick={() => handleEditQuestion(index)}
+                className="edit-button"
+              >
                 ✏️
               </button>
-              <button onClick={() => handleDeleteQuestion(index)} className="delete-button">
+              <button
+                onClick={() => handleDeleteQuestion(index)}
+                className="delete-button"
+              >
                 🗑️
               </button>
             </div>
@@ -488,11 +565,12 @@ const QuestionManager = ({ questions, onQuestionsUpdate, defaultQuestions }) => 
           🔄 Restaurar Preguntas por Defecto
         </button>
         <p className="manager-info">
-          <strong>Nota:</strong> Los cambios se guardan automáticamente en el navegador.
+          <strong>Nota:</strong> Los cambios se guardan automáticamente en el
+          navegador.
         </p>
       </div>
     </div>
   );
 };
 
-export default StreamController; 
+export default StreamController;
